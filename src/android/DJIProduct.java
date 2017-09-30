@@ -1,4 +1,4 @@
-package com.dji.plugin;
+package io.cordova.hellocordova;
 
 import android.app.Application;
 import android.content.Intent;
@@ -18,13 +18,11 @@ import dji.sdk.products.Aircraft;
 import dji.sdk.products.HandHeld;
 import dji.sdk.sdkmanager.DJISDKManager;
 
-public class DJIProduct extends Application{
-
-    public static final String FLAG_CONNECTION_CHANGE = "connection_change";
-
-    private static BaseProduct mProduct;
+public class DJIProduct {
 
     public Handler mHandler;
+    private static BaseProduct mProduct;
+
 
     /**
      * This function is used to get the instance of DJIBaseProduct.
@@ -90,106 +88,5 @@ public class DJIProduct extends Application{
         return g;
     }
 
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        mHandler = new Handler(Looper.getMainLooper());
-        //This is used to start SDK services and initiate SDK.
-        DJISDKManager.getInstance().registerApp(this, mDJISDKManagerCallback);
-
-
-    }
-
-    /**
-     * When starting SDK services, an instance of interface DJISDKManager.DJISDKManagerCallback will be used to listen to
-     * the SDK Registration result and the product changing.
-     */
-    private DJISDKManager.SDKManagerCallback mDJISDKManagerCallback = new DJISDKManager.SDKManagerCallback() {
-
-        //Listens to the SDK registration result
-        @Override
-        public void onRegister(DJIError error) {
-
-            if(error == DJISDKError.REGISTRATION_SUCCESS) {
-
-                Handler handler = new Handler(Looper.getMainLooper());
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(getApplicationContext(), "Register Success", Toast.LENGTH_LONG).show();
-                    }
-                });
-
-                DJISDKManager.getInstance().startConnectionToProduct();
-
-            } else {
-
-                Handler handler = new Handler(Looper.getMainLooper());
-                handler.post(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        Toast.makeText(getApplicationContext(), "Register sdk fails, check network is available", Toast.LENGTH_LONG).show();
-                    }
-                });
-
-            }
-            Log.e("TAG", error.toString());
-        }
-
-        //Listens to the connected product changing, including two parts, component changing or product connection changing.
-        @Override
-        public void onProductChange(BaseProduct oldProduct, BaseProduct newProduct) {
-
-            mProduct = newProduct;
-            if(mProduct != null) {
-                mProduct.setBaseProductListener(mDJIBaseProductListener);
-            }
-
-            notifyStatusChange();
-        }
-    };
-
-    private BaseProduct.BaseProductListener mDJIBaseProductListener = new BaseProduct.BaseProductListener() {
-
-        @Override
-        public void onComponentChange(BaseProduct.ComponentKey key, BaseComponent oldComponent, BaseComponent newComponent) {
-
-            if(newComponent != null) {
-                newComponent.setComponentListener(mDJIComponentListener);
-            }
-            notifyStatusChange();
-        }
-
-        @Override
-        public void onConnectivityChange(boolean isConnected) {
-
-            notifyStatusChange();
-        }
-
-    };
-
-    private BaseComponent.ComponentListener mDJIComponentListener = new BaseComponent.ComponentListener() {
-
-        @Override
-        public void onConnectivityChange(boolean isConnected) {
-            notifyStatusChange();
-        }
-
-    };
-
-    private void notifyStatusChange() {
-        mHandler.removeCallbacks(updateRunnable);
-        mHandler.postDelayed(updateRunnable, 500);
-    }
-
-    private Runnable updateRunnable = new Runnable() {
-
-        @Override
-        public void run() {
-            Intent intent = new Intent(FLAG_CONNECTION_CHANGE);
-            sendBroadcast(intent);
-        }
-    };
 
 }

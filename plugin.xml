@@ -39,7 +39,7 @@
     <platform name="android">
         <config-file target="res/xml/config.xml" parent="/*">
             <feature name="DJIPlugin">
-                <param name="android-package" value="io.cordova.hellocordova"/>
+                <param name="android-package" value="io.cordova.hellocordova.DJIPlugin"/>
             </feature>
         </config-file>
         <source-file src="src/android/DJIPlugin.java" target-dir="src/io/cordova/hellocordova/" />
