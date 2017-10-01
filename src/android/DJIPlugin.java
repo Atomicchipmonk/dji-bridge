@@ -41,10 +41,14 @@ import dji.sdk.base.BaseComponent;
 import dji.sdk.base.BaseProduct;
 import dji.sdk.camera.Camera;
 import dji.sdk.flightcontroller.FlightController;
+import dji.sdk.battery.Battery;
+import dji.common.battery.AggregationState;
 import dji.common.flightcontroller.FlightControllerState;
+import dji.common.gimbal.GimbalState;
 import dji.sdk.gimbal.Gimbal;
 import dji.sdk.products.HandHeld;
 import dji.sdk.sdkmanager.DJISDKManager;
+
 
 
 /**
@@ -60,12 +64,13 @@ public class DJIPlugin extends CordovaPlugin {
     boolean productConnected;
 
     FlightController fc = null;
-
-
+    Gimbal gc = null;
+    Battery b = null;
 
     private double lat = 0;
     private double lon = 0;
     private float alt = 0;
+
     private double yaw = 0;
     private double pitch = 0;
     private double roll = 0;
@@ -73,6 +78,14 @@ public class DJIPlugin extends CordovaPlugin {
     private double gimbalPitch = 0;
     private double gimbalRoll = 0;
 
+    private int battery = 0;
+    private boolean isFlying = false;
+    private int gpsSatellites = 0;
+
+
+
+    public static CallbackContext attitudeCallback = null;
+    public static CallbackContext locationCallback = null;
 
 
     public void initialize(CordovaInterface cordova, CordovaWebView webView){
@@ -84,6 +97,10 @@ public class DJIPlugin extends CordovaPlugin {
         appContext = this.cordova.getActivity().getApplicationContext();
         DJISDKManager.getInstance().registerApp(appContext, mDJISDKManagerCallback);
 
+
+//maybe need something for permissions
+
+//one for SDK Manager
         String [] permissions = {Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.VIBRATE,
             Manifest.permission.INTERNET, Manifest.permission.ACCESS_WIFI_STATE,
             Manifest.permission.WAKE_LOCK, Manifest.permission.ACCESS_COARSE_LOCATION,
@@ -94,10 +111,6 @@ public class DJIPlugin extends CordovaPlugin {
         };
 
         cordova.requestPermissions(this, 0, permissions);
-
-
-
-
 
     }
 
@@ -122,23 +135,36 @@ public class DJIPlugin extends CordovaPlugin {
             }
             
         } else if(action.equals("getAttitude")){
-            if(productConnected == true && fc != null){
-                callbackContext.success(String.valueOf(pitch));
-            } else {
-                PluginResult att = new PluginResult(PluginResult.Status.NO_RESULT);
-                att.setKeepCallback(true);
-                
-                callbackContext.error("Not Connected");
-            }
+            JSONObject attJson = new JSONObject();
+            attJson.put("yaw", String.valueOf(yaw));
+            attJson.put("pitch", String.valueOf(pitch));
+            attJson.put("roll", String.valueOf(roll));
+            attJson.put("gimbalYaw", String.valueOf(gimbalYaw));
+            attJson.put("gimbalPitch", String.valueOf(gimbalPitch));
+            attJson.put("gimbalRoll", String.valueOf(gimbalRoll));
+            PluginResult att = new PluginResult(PluginResult.Status.OK, attJson.toString());
+            //att.setKeepCallback(true);
+            callbackContext.sendPluginResult(att);
 
         } else if(action.equals("getLocation")){
-            if(productConnected == true && fc != null){
-                callbackContext.success(String.valueOf(pitch));
-            } else {
-                callbackContext.error("Not Connected");
-            }
+            JSONObject locJson = new JSONObject();
+            locJson.put("alt", String.valueOf(alt));
+            locJson.put("lat", String.valueOf(lat));
+            locJson.put("lon", String.valueOf(lon));
+            PluginResult loc = new PluginResult(PluginResult.Status.OK, locJson.toString());
+            //loc.setKeepCallback(true);
+            callbackContext.sendPluginResult(loc);
 
-        } else if(action.equals("jurg")){
+        } else if(action.equals("getStatus")){
+            JSONObject statJson = new JSONObject();
+            statJson.put("battery", String.valueOf(battery));
+            statJson.put("gpsSatellites", String.valueOf(gpsSatellites));
+            statJson.put("isFlying", String.valueOf(isFlying));
+            PluginResult stat = new PluginResult(PluginResult.Status.OK, statJson.toString());
+            //stat.setKeepCallback(true);
+            callbackContext.sendPluginResult(stat);
+            
+        }else if(action.equals("jurg")){
             callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, ("schwing")));
 
         } else {
@@ -161,26 +187,7 @@ public class DJIPlugin extends CordovaPlugin {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- private DJISDKManager.SDKManagerCallback mDJISDKManagerCallback = new DJISDKManager.SDKManagerCallback() {
+    private DJISDKManager.SDKManagerCallback mDJISDKManagerCallback = new DJISDKManager.SDKManagerCallback() {
 
         //Listens to the SDK registration result
         @Override
@@ -194,8 +201,6 @@ public class DJIPlugin extends CordovaPlugin {
                 fc = DJIProduct.getFlightControllerInstance();
                 if (fc != null) {
                     fc.setStateCallback(new FlightControllerState.Callback() {
-
-
                         @Override
                         public void onUpdate(@NonNull FlightControllerState flightControllerState) {
                             alt = flightControllerState.getAircraftLocation().getAltitude();
@@ -204,12 +209,37 @@ public class DJIPlugin extends CordovaPlugin {
                             yaw = flightControllerState.getAttitude().yaw;
                             pitch = flightControllerState.getAttitude().pitch;
                             roll = flightControllerState.getAttitude().roll;
+                            isFlying = flightControllerState.isFlying();
+                            gpsSatellites = flightControllerState.getSatelliteCount();
 
                         }
-
-
                     });
                 }
+
+                gc = DJIProduct.getGimbalInstance();
+                if (gc != null) {
+                    gc.setStateCallback(new GimbalState.Callback() {
+                        @Override
+                        public void onUpdate(@NonNull GimbalState gimbalState) {
+                            gimbalYaw = gimbalState.getAttitudeInDegrees().getYaw();
+                            gimbalPitch = gimbalState.getAttitudeInDegrees().getPitch();
+                            gimbalRoll = gimbalState.getAttitudeInDegrees().getRoll();
+
+                        }
+                    });
+                }
+
+                b = DJIProduct.getBatteryInstance();
+                if (b != null) {
+                    b.setAggregationStateCallback(new AggregationState.Callback() {
+                        @Override
+                        public void onUpdate(@NonNull AggregationState batteryState) {
+                            //MAVIC specific, only one battery
+                            battery = batteryState.getBatteryOverviews()[0].getChargeRemainingInPercent();
+                        }
+                    });
+                }
+
             } else {
                 Log.d(TAG, "Register sdk fails, check network is available");
                 productConnected = false;

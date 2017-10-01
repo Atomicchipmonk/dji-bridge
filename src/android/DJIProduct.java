@@ -16,6 +16,7 @@ import dji.sdk.flightcontroller.FlightController;
 import dji.sdk.gimbal.Gimbal;
 import dji.sdk.products.Aircraft;
 import dji.sdk.products.HandHeld;
+import dji.sdk.battery.Battery;
 import dji.sdk.sdkmanager.DJISDKManager;
 
 public class DJIProduct {
@@ -86,6 +87,20 @@ public class DJIProduct {
         }
 
         return g;
+    }
+
+    public static synchronized Battery getBatteryInstance() {
+
+        if (getProductInstance() == null) return null;
+
+        Battery b = null;
+
+        if (getProductInstance() instanceof Aircraft){
+            b = ((Aircraft) getProductInstance()).getBattery();
+
+        }
+
+        return b;
     }
 
 
