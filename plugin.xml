@@ -43,8 +43,9 @@
             </feature>
         </config-file>
         <source-file src="src/android/DJIPlugin.java" target-dir="src/io/cordova/hellocordova/" />
-        <source-file src="src/android/DJIConnectivity.java" target-dir="src/io/cordova/hellocordova/" />
+        <source-file src="src/android/DJIVideo.java" target-dir="src/io/cordova/hellocordova/" />
         <source-file src="src/android/DJIProduct.java" target-dir="src/io/cordova/hellocordova/" />
+        <source-file src="src/android/DJISimulator.java" target-dir="src/io/cordova/hellocordova/" />
 
     </platform>
 

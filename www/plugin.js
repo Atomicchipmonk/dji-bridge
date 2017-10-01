@@ -23,12 +23,19 @@ module.exports = {
 		cordova.exec(cb, null, PLUGIN_NAME, 'attachToDevice', []);
 	},
 
+	setTestMode: function(mode, cb) {
+		cordova.exec(cb, null, PLUGIN_NAME, 'setTestMode', []);
+	},
+
 	getLocation: function(cb) {
 		cordova.exec(cb, null, PLUGIN_NAME, 'getLocation', []);
 	},
 
 	getAttitude: function(cb) {
 		cordova.exec(cb, null, PLUGIN_NAME, 'getAttitude', []);
+	},
+	getStatus: function(cb) {
+		cordova.exec(cb, null, PLUGIN_NAME, 'getStatus' []);
 	}
 
 
