@@ -58,6 +58,7 @@ public class DJIPlugin extends CordovaPlugin {
     Context appContext;
 
     private DJIProduct mDJIProduct;
+    private DJISimulator mDJISim;
 
     private boolean productConnected;
 
@@ -90,11 +91,13 @@ public class DJIPlugin extends CordovaPlugin {
         //What actually registers with DJI service
 
         mDJIProduct = new DJIProduct(this);
+        mDJISim = new DJISimulator(this);
+
 
         DJISDKManager.getInstance().registerApp(appContext, mDJIProduct.mDJISDKManagerCallback);
 
 
-        //one for SDK Manager
+        //Request permissions whenever instantiated
         String [] permissions = {Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.VIBRATE,
             Manifest.permission.INTERNET, Manifest.permission.ACCESS_WIFI_STATE,
             Manifest.permission.WAKE_LOCK, Manifest.permission.ACCESS_COARSE_LOCATION,
@@ -129,15 +132,15 @@ public class DJIPlugin extends CordovaPlugin {
                 callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, ("Product Disconnected")));
             }
 
-
-
         } else if(action.equals("setTestMode")){
 
-            Log.d(TAG, "Checking Device");
-            if(productConnected == true){
-                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, ("Product Connected")));
+            Log.d(TAG, "Setting test mode");
+            if(args.getBoolean(0) == true){
+                mDJISim.startSimulation();
+                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, ("Simulation Started")));
             } else {
-                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, ("Product Disconnected")));
+                mDJISim.stopSimulation();
+                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, ("Simulation Stopped")));
             }
 
   

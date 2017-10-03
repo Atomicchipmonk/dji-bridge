@@ -24,8 +24,8 @@ module.exports = {
 	},
 
 	setTestMode: function(mode, cb) {
-		cordova.exec(cb, null, PLUGIN_NAME, 'setTestMode', []);
-	},
+        cordova.exec(cb, null, PLUGIN_NAME, 'setTestMode', [mode]);
+    },
 
 	getLocation: function(cb) {
 		cordova.exec(cb, null, PLUGIN_NAME, 'getLocation', []);
@@ -35,7 +35,7 @@ module.exports = {
 		cordova.exec(cb, null, PLUGIN_NAME, 'getAttitude', []);
 	},
 	getStatus: function(cb) {
-		cordova.exec(cb, null, PLUGIN_NAME, 'getStatus' []);
+		cordova.exec(cb, null, PLUGIN_NAME, 'getStatus', []);
 	}
 
 
