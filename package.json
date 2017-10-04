@@ -1,6 +1,6 @@
 {
   "name": "dji-bridge",
-  "version": "0.2.3-dev",
+  "version": "1.0.0-dev",
   "description": "DJI Plugin",
   "types": "./types/index.d.ts",
   "cordova": {

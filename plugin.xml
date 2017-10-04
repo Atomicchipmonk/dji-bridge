@@ -21,7 +21,7 @@
 
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
-        id="dji-bridge" version="0.2.3">
+        id="dji-bridge" version="1.0.0">
     <name>dji-bridge</name>
     <description>Cordova DJI Bridge</description>
     <license>Apache 2.0</license>
